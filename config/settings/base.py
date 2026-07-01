@@ -371,8 +371,8 @@ CACHES = {
 # Unfold admin theme
 # ---------------------------------------------------------------------------
 UNFOLD = {
-    "SITE_TITLE": env("ADMIN_SITE_TITLE", default="API Admin"),
-    "SITE_HEADER": env("ADMIN_SITE_HEADER", default="API Administration"),
+    "SITE_TITLE": env("ADMIN_SITE_TITLE", default="Inventory API Admin"),
+    "SITE_HEADER": env("ADMIN_SITE_HEADER", default="Inventory API Administration"),
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": False,
     "COLORS": {

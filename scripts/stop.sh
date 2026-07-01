@@ -28,7 +28,7 @@ if [[ "${2:-}" == "--volumes" || "${2:-}" == "-v" ]]; then
 fi
 
 export DJANGO_ENV="$ENV"
-export COMPOSE_PROJECT_NAME="api_${ENV}"
+export COMPOSE_PROJECT_NAME="inventory_api_${ENV}"
 
 echo "[stop] Stopping '$ENV' stack..."
 docker compose -f docker-compose.yml -f "$OVERLAY" down $VOLUMES

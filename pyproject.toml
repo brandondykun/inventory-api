@@ -1,7 +1,7 @@
 [project]
-name = "api"
+name = "inventory-api"
 version = "0.1.0"
-description = "Generic Dockerized Django REST Framework base application"
+description = "Inventory API"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

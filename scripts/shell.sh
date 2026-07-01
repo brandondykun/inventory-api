@@ -28,7 +28,7 @@ case "$ENV" in
 esac
 
 export DJANGO_ENV="$ENV"
-export COMPOSE_PROJECT_NAME="api_${ENV}"
+export COMPOSE_PROJECT_NAME="inventory_api_${ENV}"
 
 COMPOSE=(docker compose -f docker-compose.yml -f "$OVERLAY")
 

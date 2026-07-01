@@ -10,7 +10,7 @@ x-django: &django
   build:
     context: .
     dockerfile: compose/django/Dockerfile
-  image: api-app:${DJANGO_ENV:-dev}
+  image: inventory-api:${DJANGO_ENV:-dev}
   depends_on:
     db:
       condition: service_healthy
@@ -27,7 +27,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-api} -d $${POSTGRES_DB:-api}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-api} -d $${POSTGRES_DB:-api}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -52,8 +56,15 @@ services:
   beat:
     <<: *django
     command:
-      ["celery", "-A", "config", "beat", "--loglevel=info",
-       "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+      [
+        "celery",
+        "-A",
+        "config",
+        "beat",
+        "--loglevel=info",
+        "--scheduler",
+        "django_celery_beat.schedulers:DatabaseScheduler",
+      ]
 
 volumes:
   postgres_data:

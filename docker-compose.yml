@@ -1,0 +1,61 @@
+# Base service topology shared by every environment.
+#
+# This file is always combined with exactly one environment overlay via
+# scripts/start.sh (e.g. docker-compose.override.yml for dev, .prod.yml for
+# production). The overlay supplies env_file, build target, web command, ports
+# and any extra services (nginx). Deliberately no env_file here so overlays
+# don't accumulate/leak each other's variables.
+
+x-django: &django
+  build:
+    context: .
+    dockerfile: compose/django/Dockerfile
+  image: api-app:${DJANGO_ENV:-dev}
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - static_volume:/app/staticfiles
+    - media_volume:/app/mediafiles
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-api} -d $${POSTGRES_DB:-api}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    <<: *django
+
+  worker:
+    <<: *django
+    command: ["celery", "-A", "config", "worker", "--loglevel=info"]
+
+  beat:
+    <<: *django
+    command:
+      ["celery", "-A", "config", "beat", "--loglevel=info",
+       "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

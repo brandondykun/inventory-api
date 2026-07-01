@@ -1,0 +1,43 @@
+# End-to-end overlay. Production-like (prod image, gunicorn, real Celery) but
+# pointed at an isolated database, with nginx fronting the app.
+
+services:
+  db:
+    env_file: envs/.env.e2e
+
+  redis:
+    env_file: envs/.env.e2e
+
+  web:
+    build:
+      target: prod
+    env_file: envs/.env.e2e
+    command:
+      ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+
+  worker:
+    build:
+      target: prod
+    env_file: envs/.env.e2e
+
+  beat:
+    build:
+      target: prod
+    env_file: envs/.env.e2e
+
+  nginx:
+    build:
+      context: .
+      dockerfile: compose/nginx/Dockerfile
+    depends_on:
+      - web
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/mediafiles:ro
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  media_volume:

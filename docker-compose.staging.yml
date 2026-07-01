@@ -1,0 +1,44 @@
+# Staging overlay — production image + nginx, docs enabled. Mirrors prod.
+
+services:
+  db:
+    env_file: envs/.env.staging
+
+  redis:
+    env_file: envs/.env.staging
+
+  web:
+    build:
+      target: prod
+    env_file: envs/.env.staging
+    command:
+      ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+
+  worker:
+    build:
+      target: prod
+    env_file: envs/.env.staging
+
+  beat:
+    build:
+      target: prod
+    env_file: envs/.env.staging
+
+  nginx:
+    build:
+      context: .
+      dockerfile: compose/nginx/Dockerfile
+      args:
+        NGINX_CONF: nginx.staging.conf
+    depends_on:
+      - web
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/mediafiles:ro
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  media_volume:

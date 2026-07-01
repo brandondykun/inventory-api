@@ -1,0 +1,48 @@
+# Production overlay — production image, gunicorn, nginx (TLS-terminating
+# upstream or add certs to the nginx image), strict restart policies.
+
+services:
+  db:
+    env_file: envs/.env.prod
+
+  redis:
+    env_file: envs/.env.prod
+
+  web:
+    build:
+      target: prod
+    env_file: envs/.env.prod
+    command:
+      ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000",
+       "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
+    restart: always
+
+  worker:
+    build:
+      target: prod
+    env_file: envs/.env.prod
+    restart: always
+
+  beat:
+    build:
+      target: prod
+    env_file: envs/.env.prod
+    restart: always
+
+  nginx:
+    build:
+      context: .
+      dockerfile: compose/nginx/Dockerfile
+    depends_on:
+      - web
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/mediafiles:ro
+    ports:
+      - "80:80"
+      # - "443:443"   # enable once certs are mounted into the nginx image
+    restart: always
+
+volumes:
+  static_volume:
+  media_volume:

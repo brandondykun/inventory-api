@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+.venv/
+venv/
+
+# Django
+*.log
+db.sqlite3
+/staticfiles/
+/mediafiles/
+/media/
+
+# Environment files — only *.example templates are committed
+envs/.env.*
+!envs/.env.*.example
+.env
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Tooling
+.ruff_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# AI tooling — share .ai/ (skills + rules); ignore each tool's local config.
+# The skills/rules symlinks into .ai/ ARE committed; only local config is ignored.
+.claude/settings.local.json
+.cursor/settings.local.json

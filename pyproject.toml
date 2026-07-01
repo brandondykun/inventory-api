@@ -1,0 +1,80 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Generic Dockerized Django REST Framework base application"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2,<5.3",  # LTS — security support through April 2028
+    "djangorestframework>=3.17,<3.18",
+    "djangorestframework-simplejwt>=5.5,<6",
+    "django-allauth[socialaccount]>=65.18,<66",  # identity layer: accounts + social providers
+    "dj-rest-auth>=7.2,<8",  # contained bridge: social-token login -> our JWT delivery
+    "drf-spectacular[sidecar]>=0.29,<0.30",
+    "django-unfold>=0.99",
+    "django-cors-headers>=4.9,<5",
+    "django-filter>=25.2",
+    "django-environ>=0.12,<0.13",
+    "psycopg[binary]>=3.2,<4",
+    "celery>=5.4,<6",
+    "django-celery-beat>=2.9",
+    "redis>=5.0,<6",
+    "gunicorn>=23,<24",
+    "whitenoise>=6.7,<7",
+]
+
+[dependency-groups]
+dev = [
+    "django-debug-toolbar>=4.4",
+    "django-extensions>=3.2",
+    "werkzeug>=3.0",
+    "ruff>=0.8",
+    "pre-commit>=4.0",
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=5.0",
+    "factory-boy>=3.3",
+    "faker>=30",
+]
+
+[tool.uv]
+package = false
+
+# ---------------------------------------------------------------------------
+# Ruff (lint + format) — replaces black / isort / flake8
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle + pyflakes
+    "I",             # isort
+    "UP",            # pyupgrade
+    "B",             # flake8-bugbear
+    "DJ",            # flake8-django
+    "C4",            # flake8-comprehensions
+    "SIM",           # flake8-simplify
+]
+ignore = ["E501"]  # line length handled by the formatter
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["tests.py", "test_*.py", "*_test.py"]
+addopts = "--strict-markers --reuse-db --cov=apps --cov-report=term-missing"
+testpaths = ["apps"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/admin.py"]

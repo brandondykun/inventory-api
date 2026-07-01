@@ -1,0 +1,36 @@
+.git
+.gitignore
+.dockerignore
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.Python
+
+# Env files (injected at runtime via compose env_file, never baked in)
+envs/.env.*
+!envs/.env.*.example
+.env
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Local artifacts
+staticfiles/
+mediafiles/
+media/
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# Docs / plans
+*.md
+!README.md

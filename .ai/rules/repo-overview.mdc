@@ -1,0 +1,74 @@
+---
+description: High-level map of the DRF base API — tech stack, directory layout, app responsibilities, and project conventions. Read this first on any task.
+globs:
+alwaysApply: true
+---
+
+# Repo overview — DRF base API
+
+A generic, Dockerized **Django REST Framework** starter meant to be forked for
+new projects. Single image runs every environment; behavior is swapped via the
+`.env` file + `DJANGO_SETTINGS_MODULE`.
+
+## Tech stack
+
+- **Django 5.2 + DRF 3.17**, Python 3.13
+- **Postgres 17**, **Redis 7** (cache + Celery broker/result backend)
+- **uv** for locked dependency management (`pyproject.toml` + `uv.lock`)
+- **JWT auth** via Simple JWT, with web-cookie / mobile-body delivery
+- **django-allauth** (+ `dj-rest-auth` social bridge) as the identity layer
+- **Celery + beat** (DB-backed schedule) for async work
+- **nginx + gunicorn** for prod-like envs; **runserver** in dev
+- **drf-spectacular** OpenAPI docs, **django-unfold** admin theme
+- **pytest-django**, **ruff**, **pre-commit**, **django-debug-toolbar**
+
+## Directory layout
+
+```
+config/                  # project package
+  settings/              # split settings: base → dev/test/e2e/staging/production
+  urls.py                # root URLconf (admin, healthz, /api/*, /accounts/*, docs)
+  celery.py              # Celery app (autodiscovers apps/*/tasks.py)
+  wsgi.py / asgi.py
+apps/
+  common/                # shared building blocks (no business logic)
+    models.py            # TimeStampedModel, UUIDModel, BaseModel (UUID pk + timestamps)
+    pagination.py        # StandardResultsSetPagination (page_size, max 100)
+    exceptions.py        # api_exception_handler — {"error": {...}} envelope
+    views.py             # HealthCheckView → GET /healthz/
+  users/                 # custom user model (email login, UUID pk)
+    models.py managers.py serializers.py views.py urls.py admin.py adapters.py
+  authentication/        # JWT login/refresh/logout + social + cookie-or-header auth
+    authentication.py serializers.py utils.py views.py adapters.py urls.py
+compose/                 # Dockerfiles (django multi-stage, nginx) + nginx confs
+envs/                    # per-env .env files; *.example committed, real ones gitignored
+scripts/                 # start.sh / stop.sh / manage.sh / shell.sh / entrypoint.sh
+docker-compose.yml       # base topology; one overlay per env is layered on top
+manage.py
+```
+
+## Conventions
+
+- **Models** that need a UUID pk and/or timestamps inherit from
+  `apps.common.models.BaseModel` (UUID pk + `created_at`/`updated_at`).
+- **Errors**: all DRF errors are wrapped by `api_exception_handler` into
+  `{"error": {"status_code": N, "detail": ...}}`. Don't bypass it.
+- **Auth/permissions** default to `CookieOrHeaderJWTAuthentication` +
+  `IsAuthenticated` globally (see `REST_FRAMEWORK`). Opt out per-view with
+  `authentication_classes = []` / `permission_classes = [AllowAny]`.
+- **Settings**: never hardcode env-specific values in `base.py`. Add a setting
+  read via `env(...)` with a safe default, then override in the env module.
+  Secrets in `production.py` have **no defaults** — they must fail loud.
+- **New apps** go under `apps/` and are registered in `LOCAL_APPS`
+  (`config/settings/base.py`). Tasks go in `apps/<app>/tasks.py` (auto-discovered).
+- **Lint/format** with ruff (`line-length = 100`, double quotes); migrations are
+  excluded. Run `uv run ruff check . && uv run ruff format .`.
+- **Tests** live in `apps/<app>/tests/`, run under `config.settings.test`
+  (eager Celery, MD5 hasher, locmem cache/email). `--reuse-db` is on.
+
+## Deeper guides (read on demand)
+
+- **Authentication** (login/refresh/logout, web-vs-mobile tokens, social
+  sign-in, the custom user model): `.ai/skills/auth-system/SKILL.md`
+- **Running the app** (environments, Docker containers, start/stop, common
+  management commands): `.ai/skills/running-the-app/SKILL.md`

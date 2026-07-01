@@ -1,0 +1,21 @@
+# Test overlay. Runs the suite with the dev image (dev deps include pytest).
+# Celery is eager (CELERY_TASK_ALWAYS_EAGER) so no worker/beat are needed.
+
+services:
+  worker:
+    profiles: ["disabled"]
+
+  beat:
+    profiles: ["disabled"]
+
+  web:
+    build:
+      target: dev
+    env_file: envs/.env.test
+    command: ["pytest"]
+    restart: "no"
+    volumes:
+      - .:/app
+
+  db:
+    env_file: envs/.env.test

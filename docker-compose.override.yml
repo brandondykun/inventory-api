@@ -1,0 +1,39 @@
+# Development overlay — auto-loaded by `docker compose up` and by
+# `scripts/start.sh dev`. Source is bind-mounted for live reload; runserver is
+# used instead of gunicorn; ports are exposed to the host.
+
+services:
+  db:
+    env_file: envs/.env.dev
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  web:
+    build:
+      target: dev
+    env_file: envs/.env.dev
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+
+  worker:
+    build:
+      target: dev
+    env_file: envs/.env.dev
+    volumes:
+      - .:/app
+
+  beat:
+    build:
+      target: dev
+    env_file: envs/.env.dev
+    volumes:
+      - .:/app

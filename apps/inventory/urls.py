@@ -7,6 +7,10 @@ from .views import (
     InventoryUnitListCreateView,
     ItemDetailView,
     ItemListCreateView,
+    ParTemplateDetailView,
+    ParTemplateLineDetailView,
+    ParTemplateLineListCreateView,
+    ParTemplateListCreateView,
     UnitOfMeasureDetailView,
     UnitOfMeasureListCreateView,
     UnitTypeDetailView,
@@ -55,5 +59,25 @@ urlpatterns = [
         "organizations/<uuid:org_id>/units/<uuid:pk>/",
         InventoryUnitDetailView.as_view(),
         name="unit-detail",
+    ),
+    path(
+        "organizations/<uuid:org_id>/par-templates/",
+        ParTemplateListCreateView.as_view(),
+        name="par-template-list-create",
+    ),
+    path(
+        "organizations/<uuid:org_id>/par-templates/<uuid:pk>/",
+        ParTemplateDetailView.as_view(),
+        name="par-template-detail",
+    ),
+    path(
+        "organizations/<uuid:org_id>/par-templates/<uuid:template_id>/lines/",
+        ParTemplateLineListCreateView.as_view(),
+        name="par-line-list-create",
+    ),
+    path(
+        "organizations/<uuid:org_id>/par-templates/<uuid:template_id>/lines/<uuid:pk>/",
+        ParTemplateLineDetailView.as_view(),
+        name="par-line-detail",
     ),
 ]

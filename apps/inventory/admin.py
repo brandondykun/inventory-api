@@ -2,7 +2,14 @@
 
 from django.contrib import admin
 
-from .models import InventoryUnit, Item, UnitOfMeasure, UnitType
+from .models import (
+    InventoryUnit,
+    Item,
+    ParTemplate,
+    ParTemplateItem,
+    UnitOfMeasure,
+    UnitType,
+)
 
 
 @admin.register(UnitType)
@@ -33,3 +40,17 @@ class InventoryUnitAdmin(admin.ModelAdmin):
     list_filter = ["organization", "unit_type"]
     search_fields = ["name"]
     raw_id_fields = ["parent"]
+
+
+class ParTemplateItemInline(admin.TabularInline):
+    model = ParTemplateItem
+    extra = 0
+    raw_id_fields = ["item", "unit_of_measure"]
+
+
+@admin.register(ParTemplate)
+class ParTemplateAdmin(admin.ModelAdmin):
+    list_display = ["name", "organization", "is_active"]
+    list_filter = ["organization", "is_active"]
+    search_fields = ["name"]
+    inlines = [ParTemplateItemInline]

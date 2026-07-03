@@ -2,7 +2,14 @@
 
 import factory
 
-from apps.inventory.models import InventoryUnit, Item, UnitOfMeasure, UnitType
+from apps.inventory.models import (
+    InventoryUnit,
+    Item,
+    ParTemplate,
+    ParTemplateItem,
+    UnitOfMeasure,
+    UnitType,
+)
 from apps.organizations.tests.factories import OrganizationFactory
 
 
@@ -37,3 +44,26 @@ class InventoryUnitFactory(factory.django.DjangoModelFactory):
 
     organization = factory.SubFactory(OrganizationFactory)
     name = factory.Sequence(lambda n: f"Unit {n}")
+
+
+class ParTemplateFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ParTemplate
+
+    organization = factory.SubFactory(OrganizationFactory)
+    name = factory.Sequence(lambda n: f"Par Template {n}")
+
+
+class ParTemplateItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ParTemplateItem
+
+    template = factory.SubFactory(ParTemplateFactory)
+    item = factory.SubFactory(
+        ItemFactory, organization=factory.SelfAttribute("..template.organization")
+    )
+    unit_of_measure = factory.SubFactory(
+        UnitOfMeasureFactory,
+        organization=factory.SelfAttribute("..template.organization"),
+    )
+    par_quantity = 5

@@ -101,6 +101,13 @@ class InventoryUnit(BaseModel):
         on_delete=models.CASCADE,
         related_name="children",
     )
+    par_template = models.ForeignKey(
+        "ParTemplate",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="units",
+    )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
@@ -164,3 +171,40 @@ class InventoryUnit(BaseModel):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+
+class ParTemplate(BaseModel):
+    """The ideal set of items and counts for a unit (the "should-be"). Owned by
+    the org and assignable to many units (e.g. a whole fleet)."""
+
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="par_templates"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class ParTemplateItem(BaseModel):
+    """One line of a par template: an item and its target quantity."""
+
+    template = models.ForeignKey(ParTemplate, on_delete=models.CASCADE, related_name="lines")
+    item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name="par_lines")
+    par_quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    min_quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit_of_measure = models.ForeignKey(
+        UnitOfMeasure, on_delete=models.PROTECT, related_name="par_lines"
+    )
+
+    class Meta:
+        unique_together = ("template", "item")
+        ordering = ["item__name"]
+
+    def __str__(self):
+        return f"{self.item}: {self.par_quantity} {self.unit_of_measure}"

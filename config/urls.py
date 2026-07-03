@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/auth/", include("apps.authentication.urls")),
     path("api/users/", include("apps.users.urls")),
     path("api/", include("apps.organizations.urls")),
+    path("api/", include("apps.inventory.urls")),
     # allauth's account routes (email confirmation, password reset). Mounted so
     # verification/reset links in emails resolve out of the box. A fork with its
     # own SPA/mobile frontend can instead override the adapter's

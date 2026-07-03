@@ -44,7 +44,7 @@ class Organization(BaseModel):
         if resource == "members":
             return self.memberships.count()
         if resource == "locations":
-            return self.units.count()
+            return self.units.filter(parent__isnull=True).count()
         if resource == "items":
             return self.items.count()
         raise ValueError(f"Unknown resource: {resource!r}")
@@ -180,6 +180,7 @@ class Plan(BaseModel):
     max_locations = models.PositiveIntegerField(null=True, blank=True)  # null = unlimited
     max_items = models.PositiveIntegerField(null=True, blank=True)
     max_members = models.PositiveIntegerField(null=True, blank=True)
+    max_subdivisions = models.PositiveIntegerField(null=True, blank=True)  # null = unlimited
     stripe_price_id = models.CharField(max_length=100, blank=True)
     monthly_price_cents = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -208,6 +209,7 @@ class Subscription(BaseModel):
     max_locations_override = models.PositiveIntegerField(null=True, blank=True)
     max_items_override = models.PositiveIntegerField(null=True, blank=True)
     max_members_override = models.PositiveIntegerField(null=True, blank=True)
+    max_subdivisions_override = models.PositiveIntegerField(null=True, blank=True)
     # Negotiated monthly price for this specific customer. This is our recorded
     # figure only — once Stripe is wired, Stripe remains the source of truth for
     # what is actually charged (see stripe_subscription_id). null = use the plan.
@@ -218,8 +220,8 @@ class Subscription(BaseModel):
     current_period_end = models.DateTimeField(null=True, blank=True)
 
     def limit_for(self, resource):
-        """Effective limit for 'locations' | 'items' | 'members'. None =
-        unlimited. A per-subscription override wins over the plan's value."""
+        """Effective limit for 'locations' | 'items' | 'members' | 'subdivisions'.
+        None = unlimited. A per-subscription override wins over the plan's value."""
         override = getattr(self, f"max_{resource}_override")
         if override is not None:
             return override

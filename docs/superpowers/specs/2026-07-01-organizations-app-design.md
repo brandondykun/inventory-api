@@ -111,6 +111,12 @@ original draft. All API errors flow through the existing
 - One per organization (`OneToOne`). Auto-created on the Free plan with status
   `ACTIVE` when an org is created.
 - `limit_for(resource)` retained (per-subscription override wins over plan).
+- Adds `monthly_price_cents_override` alongside the `max_*_override` fields, for
+  recording a negotiated per-customer price, plus an
+  `effective_monthly_price_cents` accessor (override if set, else the plan's
+  list price). This is a **recorded/displayed figure only**: once Stripe is
+  wired, Stripe (via `stripe_subscription_id`) remains the source of truth for
+  what is actually charged.
 
 ## Lifecycle / signals
 

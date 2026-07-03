@@ -40,6 +40,11 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     def __str__(self) -> str:
         return self.email
 
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
+
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()

@@ -10,6 +10,10 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
+    @classmethod
+    def normalize_email(cls, email):
+        return super().normalize_email(email).lower()
+
     def _create_user(self, email: str, password: str | None, **extra_fields):
         if not email:
             raise ValueError("The email address must be set")
